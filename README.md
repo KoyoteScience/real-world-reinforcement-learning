@@ -4,8 +4,7 @@ This repository relies on a local version of our Bandito and BanditoSequence API
 
 To run, download and execute in the same directory:
 
-```
-python
+```python
 from src.gamend import EvaluateGamePerformance
 
 evaluator_with_q_learning = EvaluateGamePerformance()
@@ -13,5 +12,4 @@ evaluator_with_q_learning.run_training()
 
 evaluator = EvaluateGamePerformance(q_learning=False)
 evaluator.run_training()
-
 ```
