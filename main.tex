@@ -113,8 +113,8 @@ Q^\ast(\mathbf{s},\mathbf{a})=r(\mathbf{s},\mathbf{a})+\gamma \argmax_{a'}Q^\ast
 We can update the $Q$-value using \textbf{temporal-difference} (TD) update rules that use the fact that we can always improve our estimates of the $Q$-value by iterating over our trajectories, at each time step updating our function approximator of the $Q$-value to predict targets that increment against the old estimate. The incremental value, or target, is supplied by the difference between the  reward returned by the environment for the current state and action pair ($\mathbf{s}$, $\mathbf{a}$) and the reward for the current time step predicted by our function approximator. We then multiply it by a learning rate $\alpha\in(0,1]$ in the explicit update rules, or use the learning rate in the computed policy gradient update rules (more on this later). 
 
 Since the approximator covers the discounted sum of future rewards $G_t$, rather than specific rewards at each time step, we use the Bellman equation to predict the reward for the current time step as the temporal difference $G_{t+1}-G_t$ predicted by the function approximator. We can also look at higher-order approxiamtions using more than one time step, and define these quantities as \begin{equation}\begin{split}
-G_t^{(1)}=G_{t:t+1}&=r(\mathbf{s}_t,\mathbf{a}_t)+\gamma V (\mathbf{s}_{t+1})\\G_t^{(2)}=G_{t:t+2}&=r(\mathbf{s}_t,\mathbf{a}_t)+\gamma r(\mathbf{s}_{t+1},\mathbf{a}_{t+1})+\gamma^2 V (\mathbf{s}_{t+2})\\G_t^{(n)}=G_{t:t+n}&=r(\mathbf{s}_t,\mathbf{a}_t)+\gamma r(\mathbf{s}_{t+1},\mathbf{a}_{t+1})+\cdots\\&\nobreakspace\nobreakspace\nobreakspace\nobreakspace+\gamma^{n-1}r(\mathbf{s}_{t+n-1},\mathbf{a}_{t+n-1})+\gamma^n V (\mathbf{s}_{t+n})\end{split}\end{equation} where we have dropped the explicit policy markers for clarity.  The equivalent expression using the action-value function is \begin{equation}\begin{split}G_{t:t+n}&=r(\mathbf{s}_t,\mathbf{a}_t)+\gamma r(\mathbf{s}_{t+1},\mathbf{a}_{t+1})+\cdots\\&\nobreakspace\nobreakspace\nobreakspace\nobreakspace+\gamma^{n-1}r(\mathbf{s}_{t+n-1},\mathbf{a}_{t+n-1})+\gamma^n Q (\mathbf{s}_{t+n},\mathbf{a}_{t+n})\end{split}\end{equation} where the use of the action- or state-value versions is implied by context. The equivalent expression when using expectations is \begin{equation}\begin{split}
-G_{t:t+n}^{(\text{expected})}&=r(\mathbf{s}_t,\mathbf{a}_t)+\gamma r(\mathbf{s}_{t+1},\mathbf{a}_{t+1})+\cdots\\&\nobreakspace\nobreakspace\nobreakspace\nobreakspace+\gamma^{n-1}r(\mathbf{s}_{t+n-1},\mathbf{a}_{t+n-1})+\gamma^n \mathop{\mathbb{E}}_{\boldsymbol{\tau}\sim\pi}[Q (\mathbf{s}_{t+n},\mathbf{a}_{t+n})|\mathbf{s}_{t+n}]\\&=r(\mathbf{s}_t,\mathbf{a}_t)+\gamma r(\mathbf{s}_{t+1},\mathbf{a}_{t+1})+\cdots\\&\nobreakspace\nobreakspace\nobreakspace\nobreakspace+\gamma^{n-1}r(\mathbf{s}_{t+n-1},\mathbf{a}_{t+n-1})+\gamma^n \sum_\mathbf{a}\pi(\mathbf{a}|\mathbf{s}_{t+1})Q (\mathbf{s}_{t+n},\mathbf{a}_{t+n})\\\end{split}\end{equation}and the equivalent expression when using the argmax is \begin{equation}\begin{split}
+G_t^{(1)}=G_{t:t+1}^\text{(state)}&=r(\mathbf{s}_t,\mathbf{a}_t)+\gamma V (\mathbf{s}_{t+1})\\G_t^{(2)}=G_{t:t+2}^\text{(state)}&=r(\mathbf{s}_t,\mathbf{a}_t)+\gamma r(\mathbf{s}_{t+1},\mathbf{a}_{t+1})+\gamma^2 V (\mathbf{s}_{t+2})\\G_t^{(n)}=G_{t:t+n}^\text{(state)}&=r(\mathbf{s}_t,\mathbf{a}_t)+\gamma r(\mathbf{s}_{t+1},\mathbf{a}_{t+1})+\cdots\\&\nobreakspace\nobreakspace\nobreakspace\nobreakspace+\gamma^{n-1}r(\mathbf{s}_{t+n-1},\mathbf{a}_{t+n-1})+\gamma^n V (\mathbf{s}_{t+n})\end{split}\end{equation} where we have dropped the explicit policy markers for clarity.  The analogous expression using the action-value function is \begin{equation}\begin{split}G_{t:t+n}^\text{(action)}&=r(\mathbf{s}_t,\mathbf{a}_t)+\gamma r(\mathbf{s}_{t+1},\mathbf{a}_{t+1})+\cdots\\&\nobreakspace\nobreakspace\nobreakspace\nobreakspace+\gamma^{n-1}r(\mathbf{s}_{t+n-1},\mathbf{a}_{t+n-1})+\gamma^n Q (\mathbf{s}_{t+n},\mathbf{a}_{t+n})\end{split}\end{equation} where the use of the action- or state-value versions is implied by context. The analagous expression when using expectations is \begin{equation}\begin{split}
+G_{t:t+n}^{(\text{expected})}&=r(\mathbf{s}_t,\mathbf{a}_t)+\gamma r(\mathbf{s}_{t+1},\mathbf{a}_{t+1})+\cdots\\&\nobreakspace\nobreakspace\nobreakspace\nobreakspace+\gamma^{n-1}r(\mathbf{s}_{t+n-1},\mathbf{a}_{t+n-1})+\gamma^n \mathop{\mathbb{E}}_{\boldsymbol{\tau}\sim\pi}[Q (\mathbf{s}_{t+n},\mathbf{a}_{t+n})|\mathbf{s}_{t+n}]\\&=r(\mathbf{s}_t,\mathbf{a}_t)+\gamma r(\mathbf{s}_{t+1},\mathbf{a}_{t+1})+\cdots\\&\nobreakspace\nobreakspace\nobreakspace\nobreakspace+\gamma^{n-1}r(\mathbf{s}_{t+n-1},\mathbf{a}_{t+n-1})+\gamma^n \sum_\mathbf{a}\pi(\mathbf{a}|\mathbf{s}_{t+1})Q (\mathbf{s}_{t+n},\mathbf{a}_{t+n})\\\end{split}\end{equation} and the analogous expression when using the argmax is \begin{equation}\begin{split}
 G_{t:t+n}^{(\text{argmax})}&=r(\mathbf{s}_t,\mathbf{a}_t)+\gamma r(\mathbf{s}_{t+1},\mathbf{a}_{t+1})+\cdots\\&\nobreakspace\nobreakspace\nobreakspace\nobreakspace+\gamma^{n-1}r(\mathbf{s}_{t+n-1},\mathbf{a}_{t+n-1})+\gamma^n \argmax_{\mathbf{a}'}Q (\mathbf{s}_{t+n},\mathbf{a}_{t+n})\\\end{split}\end{equation}Since the action- or $Q$-value is preferred for policies that depend on the evaluators, that is what we focus on in this section, while the state-value is preferred for the policy gradients presented in the next section.
 
 One more common elaboration, featured in the TD($\lambda$) algorithm (discussed later), is to work with a weighted sum of discounted sums of future rewards defined as:
@@ -153,33 +153,36 @@ We note that gradient updates of the form
 \end{equation}where $L(\boldsymbol{\phi},\mathbf{v})$ is the loss function of the parameters $\boldsymbol{\phi}$ and additional values, collected into $\mathbf{v}$, can be performed using stochastic gradient descent using batch samples to evaluate the loss function, which means we can simplify Equation \ref{eq:likelihood_trajectory} by considering individual samples one at a time. Working with the negative log-likelihood loss, we obtain \begin{equation}\label{eq:semi_gradient}\begin{split}
 \boldsymbol{\phi}^{(k+1)}&=\boldsymbol{\phi}^{(k)}-\frac{1}{2}\alpha \boldsymbol{\nabla}_{\boldsymbol{\phi}}L_\text{NLL}(\boldsymbol{\phi},\mathbf{v})\\&=\boldsymbol{\phi}^{(k)}-\frac{1}{2}\alpha \boldsymbol{\nabla}_{\boldsymbol{\phi}}\left(U_t-Q(\mathbf{s},\mathbf{a})\right)^2\\&=\boldsymbol{\phi}^{(k)}+\alpha \underbrace{\left(U_t-Q(\mathbf{s},\mathbf{a})\right)}_{\delta_t}\boldsymbol{\nabla}_{\boldsymbol{\phi}}Q(\mathbf{s},\mathbf{a})\\\end{split}\end{equation} where we have replaced the term in underbrace labeled "target" in Eq. \ref{eq:likelihood_trajectory} with the simpler term $U_t$ which we assume doesn't depend on $\boldsymbol{\phi}$, even though it may, and where we have applied the chain rule for derivatives. We drop the dependency on the state and action in the target since will change based on whether we are working with the state-value ($V(\mathbf{s})$) or action-value ($Q(\mathbf{s},\mathbf{a})$) functions. We've indicated the TD error $\delta_t$ in the underbrace, which has imperfect analogs to dopamin in the brain (see Section 15.4 of \cite{sutton_barto_rl}).
 
-The target $U_t$ can take on many forms, primarily by the valid entries in the cross product between the target estimator \{SARSA, Expected SARSA, $Q$-learning, off-policy\}, of which only SARSA applies to the state-value formulation, and the manner of time-difference bootstrapping \{TD(1), TD(0), TD(n), TD($\lambda$)\}, giving rise to the following possibilities
+The target $U_t$ can take on many forms, primarily by the valid entries in the cross product between the target estimator \{SARSA, Expected SARSA, $Q$-learning, off-policy\}, and the manner of time-difference bootstrapping \{TD(1), TD(0), TD(n), TD($\lambda$)\}, giving rise to the following possibilities:
  \begin{description}
-\item[TD(1)* (a.k.a. Monte Carlo):]\hfill \\ 
+\item[TD(1) (a.k.a. Monte Carlo):]\hfill \\ 
 $U_t=G_t$
-\item[TD(0) SARSA*:]\hfill \\ 
-$U_t=G_{t:t+1}$
+\item[TD(0) SARSA:]\hfill \\ 
+$U_t=G_{t:t+1}^\text{(action)}$\\
+$U_t=G_{t:t+1}^\text{(state)}$
 \item[TD(0) Expected SARSA:]\hfill \\ 
 $U_t=G_{t:t+1}^\text{(expected)}$
 \item[TD(0) $Q$-learning:]\hfill \\ 
 $U_t=G_{t:t+1}^{(\text{argmax})}$
 \item[TD(0) off-policy:]\hfill \\ 
-$U_t=\rho^\text{(target)}_{t}G_{t:t+1}$
-\item[TD(n) SARSA*:]\hfill \\
-$U_t=G_{t:t+n}$
+$U_t=\rho^\text{(target)}_{t}G_{t:t+1}^\text{(action)}$
+\item[TD(n) SARSA:]\hfill \\
+$U_t=G_{t:t+n}^\text{(action)}$\\
+$U_t=G_{t:t+n}^\text{(state)}$
 \item[TD(n) Expected SARSA:]\hfill \\
 $U_t=G_{t:t+n}^\text{(expected)}$
 \item[TD(n) $Q$-learning:]\hfill \\
 $U_t=G_{t:t+n}^{(\text{argmax})}$
 \item[TD(n) off-policy:]\hfill \\ 
-$U_t=\rho_{t:t+n}^{(\text{target})}G_{t:t+n}$
-\item[TD($\lambda$) SARSA*:]\hfill \\ 
-$U_t=G_{t:h}^{(\lambda)}$
+$U_t=\rho_{t:t+n}^{(\text{target})}G_{t:t+n}^\text{(action)}$
+\item[TD($\lambda$) SARSA:]\hfill \\ 
+$U_t=G_{t:h}^{(\lambda,\text{action})}$\\
+$U_t=G_{t:h}^{(\lambda,\text{state})}$
 \item[TD($\lambda$) $Q$-learning:]\hfill \\ 
 $U_t=G_{t:h}^{(\lambda,\text{argmax})}$
 \item[Dynamic Programming (DP):]\hfill \\ 
 $U_t=\sum_{\mathbf{a},\mathbf{s}',r}\pi(\mathbf{a}|\mathbf{s}')p(\mathbf{s}',r|\mathbf{s}_t,\mathbf{a})\left(r(\mathbf{s}_t,\mathbf{a})+\gamma Q_\text{target}(\mathbf{s}',\mathbf{a})\right)$
-\end{description}Note that the DP target requires a model of the environment $p(\mathbf{s}',r|\mathbf{s}_t,\mathbf{a})$, and that only TD(1) (Monte Carlo) and SARSA methods, indicated by asterices, apply for the state-value formulation. The back-up diagrams for these targets are shown in Figure \ref{fig:back_up_diagrams}
+\end{description}Note that the DP target requires a model of the environment $p(\mathbf{s}',r|\mathbf{s}_t,\mathbf{a})$. The back-up diagrams for these targets are shown in Figure \ref{fig:back_up_diagrams}
 
 \begin{figure}
 \label{fig:back_up_diagrams}
@@ -222,11 +225,11 @@ $\Psi_t =G_t$
 \item[REINFORCE with baseline:]\hfill \\ 
 $\Psi_t =\sum_{t'=t}^H\gamma^{t'-t} r(\mathbf{s}_{t'},\mathbf{a}_{t'})-b(\mathbf{s}_{t'})$
 \item[time-difference (TD):]\hfill \\ 
-$\Psi_t =G_{t:t+n}$ for any $n$
+$\Psi_t =G_{t:t+n}^\text{(action)}$ for any $n$
 \item[$Q$-Actor Critic (AC):]\hfill \\ 
 $\Psi_t =Q(\mathbf{s}_{t},\mathbf{a}_{t})$
 \item[$Q$-Actor Critic (AC) off-policy:]\hfill \\ 
-$\Psi_t =\rho_{\text{target}}(\mathbf{s}_t,\mathbf{a}_t)Q(\mathbf{s}_t,\mathbf{a}_t)$
+$\Psi_t =\rho^{\text{(target)}}_{t}Q(\mathbf{s}_t,\mathbf{a}_t)$
 \item[Advantage Actor Critic (A2C) :]\hfill \\ 
 $\Psi_t =A(\mathbf{s}_{t},\mathbf{a}_{t})\coloneqq Q(\mathbf{s}_{t},\mathbf{a}_{t})-V(\mathbf{s}_{t})$
 
