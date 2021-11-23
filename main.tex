@@ -153,19 +153,19 @@ We note that gradient updates of the form
 \end{equation}where $L(\boldsymbol{\phi},\mathbf{v})$ is the loss function of the parameters $\boldsymbol{\phi}$ and additional values, collected into $\mathbf{v}$, can be performed using stochastic gradient descent using batch samples to evaluate the loss function, which means we can simplify Equation \ref{eq:likelihood_trajectory} by considering individual samples one at a time. Working with the negative log-likelihood loss, we obtain \begin{equation}\label{eq:semi_gradient}\begin{split}
 \boldsymbol{\phi}^{(k+1)}&=\boldsymbol{\phi}^{(k)}-\frac{1}{2}\alpha \boldsymbol{\nabla}_{\boldsymbol{\phi}}L_\text{NLL}(\boldsymbol{\phi},\mathbf{v})\\&=\boldsymbol{\phi}^{(k)}-\frac{1}{2}\alpha \boldsymbol{\nabla}_{\boldsymbol{\phi}}\left(U_t-Q(\mathbf{s},\mathbf{a})\right)^2\\&=\boldsymbol{\phi}^{(k)}+\alpha \underbrace{\left(U_t-Q(\mathbf{s},\mathbf{a})\right)}_{\delta_t}\boldsymbol{\nabla}_{\boldsymbol{\phi}}Q(\mathbf{s},\mathbf{a})\\\end{split}\end{equation} where we have replaced the term in underbrace labeled "target" in Eq. \ref{eq:likelihood_trajectory} with the simpler term $U_t$ which we assume doesn't depend on $\boldsymbol{\phi}$, even though it may, and where we have applied the chain rule for derivatives. We drop the dependency on the state and action in the target since will change based on whether we are working with the state-value ($V(\mathbf{s})$) or action-value ($Q(\mathbf{s},\mathbf{a})$) functions. We've indicated the TD error $\delta_t$ in the underbrace, which has imperfect analogs to dopamin in the brain (see Section 15.4 of \cite{sutton_barto_rl}).
 
-The target $U_t$ can take on many forms, primarily by the valid entries in the cross product between the target estimator \{SARSA, Expected SARSA, $Q$-learning, off-policy\} and the manner of time-difference bootstrapping \{TD(1), TD(0), TD(n), TD($\lambda$)\}, giving rise to the following possibilities
+The target $U_t$ can take on many forms, primarily by the valid entries in the cross product between the target estimator \{SARSA, Expected SARSA, $Q$-learning, off-policy\}, of which only SARSA applies to the state-value formulation, and the manner of time-difference bootstrapping \{TD(1), TD(0), TD(n), TD($\lambda$)\}, giving rise to the following possibilities
  \begin{description}
-\item[TD(1) (a.k.a. Monte Carlo):]\hfill \\ 
+\item[TD(1)* (a.k.a. Monte Carlo):]\hfill \\ 
 $U_t=G_t$
-\item[TD(0) SARSA:]\hfill \\ 
+\item[TD(0) SARSA*:]\hfill \\ 
 $U_t=G_{t:t+1}$
 \item[TD(0) Expected SARSA:]\hfill \\ 
 $U_t=G_{t:t+1}^\text{(expected)}$
 \item[TD(0) $Q$-learning:]\hfill \\ 
 $U_t=G_{t:t+1}^{(\text{argmax})}$
 \item[TD(0) off-policy:]\hfill \\ 
-$U_t=\rho_\text{target}(\mathbf{s}_t|\mathbf{a}_t)G_{t:t+1}$
-\item[TD(n) SARSA:]\hfill \\
+$U_t=\rho^\text{(target)}_{t}G_{t:t+1}$
+\item[TD(n) SARSA*:]\hfill \\
 $U_t=G_{t:t+n}$
 \item[TD(n) Expected SARSA:]\hfill \\
 $U_t=G_{t:t+n}^\text{(expected)}$
@@ -173,13 +173,13 @@ $U_t=G_{t:t+n}^\text{(expected)}$
 $U_t=G_{t:t+n}^{(\text{argmax})}$
 \item[TD(n) off-policy:]\hfill \\ 
 $U_t=\rho_{t:t+n}^{(\text{target})}G_{t:t+n}$
-\item[TD($\lambda$) SARSA:]\hfill \\ 
+\item[TD($\lambda$) SARSA*:]\hfill \\ 
 $U_t=G_{t:h}^{(\lambda)}$
 \item[TD($\lambda$) $Q$-learning:]\hfill \\ 
 $U_t=G_{t:h}^{(\lambda,\text{argmax})}$
 \item[Dynamic Programming (DP):]\hfill \\ 
 $U_t=\sum_{\mathbf{a},\mathbf{s}',r}\pi(\mathbf{a}|\mathbf{s}')p(\mathbf{s}',r|\mathbf{s}_t,\mathbf{a})\left(r(\mathbf{s}_t,\mathbf{a})+\gamma Q_\text{target}(\mathbf{s}',\mathbf{a})\right)$
-\end{description}Note that the DP target requires a model of the environment $p(\mathbf{s}',r|\mathbf{s}_t,\mathbf{a})$. The back-up diagrams for these targets are shown in Figure \ref{fig:back_up_diagrams}
+\end{description}Note that the DP target requires a model of the environment $p(\mathbf{s}',r|\mathbf{s}_t,\mathbf{a})$, and that only TD(1) (Monte Carlo) and SARSA methods, indicated by asterices, apply for the state-value formulation. The back-up diagrams for these targets are shown in Figure \ref{fig:back_up_diagrams}
 
 \begin{figure}
 \label{fig:back_up_diagrams}
@@ -192,7 +192,7 @@ $U_t=\sum_{\mathbf{a},\mathbf{s}',r}\pi(\mathbf{a}|\mathbf{s}')p(\mathbf{s}',r|\
     \end{center}
 \end{figure}
 
-Of course, in all cases except for TD(1), $U_t$ depends on $\boldsymbol{\phi}$, which is why we call methods that use Equation \ref{eq:semi_gradient} \textit{semi-gradient} methods. Note that we often often replace $\boldsymbol{\phi}$ with $\boldsymbol{\phi}_\text{target}$ in our notation for the target to make this distinction, even though ideally we want to work with just one set of parameters  $\boldsymbol{\phi}$. However, it is insanely hard to calculate the gradient of $U_t$ with respect to $\boldsymbol{\phi}$, so the dependency is ignored. At this moment, we only have convergence guarantees to the local optimum for TD(1), as long as Equation 2.7 from \cite{sutton_barto_rl} is satisfied ($\alpha$ is properly reduced during traing). However, semi-gradients methods lie at the heart of the current state-of-the-art algorithms such as TD(0), DQN\cite{bootstrap_DQN}, and DDPG\cite{ddpg} anyways. 
+Of course, in all cases except for TD(1), $U_t$ depends on $\boldsymbol{\phi}$, but we treat it as if doesn't, which is why we call methods that use Equation \ref{eq:semi_gradient} \textit{semi-gradient} methods. Note that we often replace $\boldsymbol{\phi}$ with $\boldsymbol{\phi}_\text{target}$ in our notation for the target to make this distinction, even though ideally we want to work with just one set of parameters  $\boldsymbol{\phi}$. However, it is insanely hard to calculate the gradient of $U_t$ with respect to $\boldsymbol{\phi}$, so the dependency is ignored. At this moment, we only have convergence guarantees to the local optimum for TD(1), as long as Equation 2.7 from \cite{sutton_barto_rl} is satisfied ($\alpha$ is properly reduced during traing). However, semi-gradients methods lie at the heart of the current state-of-the-art algorithms such as TD(0), DQN\cite{bootstrap_DQN}, and DDPG\cite{ddpg} anyways. 
 
 When looking at linear functions of the form $Q_{\boldsymbol{\phi}}(\mathbf{s},\mathbf{a})=\boldsymbol{\phi}^\top\mathbf{x}(\mathbf{s},\mathbf{a})$, where $\mathbf{x}(\mathbf{s},\mathbf{a})$ is a feature vector dependent on the state and action, this is a convex optimization problem, so that the local optimum we find is also the global one. In this case, TD(1) also has convergence guarantees, but only to a point close to the optimum called the \textit{TD fixed point}. See sections 9.3 and 9.4 in \cite{sutton_barto_rl} for more details.
 
