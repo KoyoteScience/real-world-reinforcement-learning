@@ -6,6 +6,6 @@ authors:
   orcid: "https://orcid.org/0000-0000-0000-0000"
 title: "Real-World Reinforcement Learning"
 version: 1.0.0
-doi: 10.5281/zenodo.384595335
+doi: https://doi.org/10.5281/zenodo.5828870
 date-released: 2021-11-21
 url: "https://github.com/KoyoteScience/real-world-reinforcement-learning"
